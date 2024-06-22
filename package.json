@@ -1,0 +1,13 @@
+{
+  "scripts": {
+    "simulate": "node ./functions/simulator/alpacaMintSimulator.js",
+    "uploadSecrets": "node ./functions/uploadSecrets.js",
+    "simulatePrice": "node ./functions/simulator/TslaPriceSimulator.js",
+    "redeem": "node ./functions/simulator/alpacaRedeemSimulator.js"
+  },
+  "dependencies": {
+    "@chainlink/functions-toolkit": "^0.2.8",
+    "aws-sdk": "^2.1645.0",
+    "dotenv": "^16.4.5"
+  }
+}
