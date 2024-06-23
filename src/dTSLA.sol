@@ -73,7 +73,7 @@ contract dTSLA is ConfirmedOwner, FunctionsClient, ERC20 {
     //2. If enough Tesla is in alpaca account mint tesla
     ///mint TSLA
     //transaction function
-    function sendMintRequest(uint256 amountOfToken) private {
+    function sendMintRequest(uint256 amountOfToken , address memory user) private {
         FunctionsRequest.Request memory req;
 
         req.addDONHostedSecrets(donHostedSlotId, donHostedSecretsVersion);
@@ -89,7 +89,7 @@ contract dTSLA is ConfirmedOwner, FunctionsClient, ERC20 {
         s_MostRecentRequestId = requestId;
         s_requestIdtoRequest[requestId] = dTSLARequest(
             amountOfToken,
-            msg.sender,
+            user,
             MintOrRedeem.mint
         );
     }
@@ -105,8 +105,8 @@ contract dTSLA is ConfirmedOwner, FunctionsClient, ERC20 {
         if(!success){
             revert dTSLA_NotEnoughCollateral();
         }
-       bool success =  ERC20(SEPOILA_USDC).transferFrom(msg.sender, address(this), amountOfTokenInUsdc);
-         if(!success){
+       bool succ =  ERC20(SEPOILA_USDC).transferFrom(msg.sender, address(this), amountOfTokenInUsdc);
+         if(!succ){
               revert dTSLA_NotEnoughCollateral();
         }
         sendMintRequest(amountOfToken);
