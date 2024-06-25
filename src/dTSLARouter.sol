@@ -3,13 +3,31 @@ pragma solidity 0.8.25;
 
 import {ERC20} from "../lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol";
 import {dTSLA} from "./dTSLA.sol";
+import {Constants} from "./Constants.sol";
+import {dTSLARedeem} from "./dTSLARedeem.sol";
+contract dTSLARouter is Constants , dTSLA{
+   
+  dTSLARedeem dtslaRedeem;
+ 
+    
+    
 
-contract dTSLARouter is ERC20 , dTSLA {
+    constructor( address dTSLA_REDEEM_CONTRACT , uint64 subID , string memory mintSourceCode ) dTSLA(mintSourceCode , subID ){
+        
+       
+      
+        dtslaRedeem = dTSLARedeem(dTSLA_REDEEM_CONTRACT);
+    }
 
-    function mint(uint256 amountOfTokenInUsdc) external {
+    modifier OnlyRedeem {
+        require(msg.sender == address(dtslaRedeem) , "Only Redeem can call this function");
+        _;
+    }
+
+    function mint(uint256 amountToMint , uint256 amountOfTokenInUsdc) external {
       if( (getUsdcValueOfUsd(
-            getCalculatedNewTotalValue(amountOfToken)
-        ) * COLLATERAL_RATIO )/ COLLATERAL_PRECISION > amountOfTokenInUsdc){
+            getCalculatedNewTotalValue(amountToMint)
+        ) * COLLATERAL_RATIO )/ COLLATERAL_PRECISION > (amountOfTokenInUsdc*1e12)){
             revert dTSLA_NotEnoughCollateral();
         }
         
@@ -21,7 +39,54 @@ contract dTSLARouter is ERC20 , dTSLA {
          if(!succ){
               revert dTSLA_NotEnoughBalance();
         }
-        sendMintRequest(amountOfTokenInUsdc , msg.sender);
+     
+        sendMintRequest(amountToMint , msg.sender);
     }
+
+    function redeem (uint256 amountToRedeem) external {
+        dtslaRedeem.sendRedeemRequest(amountToRedeem , msg.sender);
+    }
+
+    function withdraw () external {
+        bool success = ERC20(SEPOILA_USDC).approve(address(dtslaRedeem), ERC20(SEPOILA_USDC).balanceOf(msg.sender)); 
+        if(!success){
+        revert dTSLA_NotEnoughBalance();
+        }
+        dtslaRedeem.withdraw(msg.sender);
+    }
+
+    
+    function getCollateralforRWATsla(uint256 amountUsdc) public onlyOwner {
+         if (
+            _collateralRatioAdjustedTotalBalance(0) <
+            getPortfolioBalance()
+        ) {
+            revert ("Enough collateral avalible");
+        }
+
+       ERC20(SEPOILA_USDC).transfer(msg.sender , amountUsdc);
+
+
+    }
+
+    function mint(uint256 amountOfToken , address user) external OnlyRedeem {
+        _mint(user , amountOfToken);
+
+    }
+
+    function burn(uint256 amount , address user) external OnlyRedeem {
+        _burn(user , amount);
+    }
+
+    function changeRedeemContractAddress(address newAddress) external onlyOwner {
+        dtslaRedeem = dTSLARedeem(newAddress);
+    }
+
+    function changeDonHostedSecretsVersion(uint64 newVersion) external onlyOwner {
+        donHostedSecretsVersion = newVersion;
+    }
+
+  
+
 }
     

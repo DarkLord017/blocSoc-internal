@@ -9,7 +9,7 @@ const requestConfig = {
     codeLocation: Location.Inline,
     secrets: { alpacaKey: process.env.ALPACA_API_KEY, alpacaSecret: process.env.ALPACA_SECRET_KEY },
     secretslocation: Location.DONHosted,
-    args: [],
+    args: ["10000000000000"],
     CodeLanguage: CodeLanguage.JavaScript,
     expectedReturnType: ReturnType.uint256,
 

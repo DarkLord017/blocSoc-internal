@@ -1,20 +1,12 @@
-const requestConfig = require("../configs/alpacaRedeemConfig.js")
-const { simulateScript, decodeResult } = require("@chainlink/functions-toolkit")
-
-
+const { simulateScript, decodeResult } = require("@chainlink/functions-toolkit");
+const requestConfig = require("../configs/alpacaRedeemConfig.js");
 async function main() {
-    const { responseBytesHexstring, errorString, capturedTerminalOutput } = await simulateScript(requestConfig)
-    console.log(`${capturedTerminalOutput}\n`)
+    const { responseBytesHexstring, errorString, capturedTerminalOutput } = await simulateScript(requestConfig);
     if (responseBytesHexstring) {
-        console.log(
-            `Response returned by script during local simulation: ${decodeResult(
-                responseBytesHexstring,
-                requestConfig.expectedReturnType
-            ).toString()}\n`
-        )
+        console.log(`Response: ${decodeResult(responseBytesHexstring, requestConfig.expectedReturnType).toString()}`)
     }
     if (errorString) {
-        console.log(`Error returned by simulated script:\n${errorString}\n`)
+        console.log(`Error: ${errorString}`)
     }
 }
 
