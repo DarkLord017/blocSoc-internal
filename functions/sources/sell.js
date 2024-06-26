@@ -65,7 +65,7 @@ const [response] = await Promise.all([
 console.log(response.data)
 const { status } = response.data
 
-if (status === "accepted" || status === "pending_new") {
+if (status === "accepted" || status === "pending_new" || status === "new" || status === "partially_filled" || status === "filled") {
     return Functions.encodeUint256(Math.round(amountTsla * 1000000000000000000))
 }
 return Functions.encodeUint256(0)

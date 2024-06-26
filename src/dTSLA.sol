@@ -9,13 +9,11 @@ import {ERC20} from "../lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.s
 import {AggregatorV3Interface} from "../lib/chainlink-brownie-contracts/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 import {Strings} from "../lib/openzeppelin-contracts/contracts/utils/Strings.sol";
 import {Constants} from "./Constants.sol";
-
+import {TslaPriceFeed} from "./TslaPriceFeed.sol";
 
 contract dTSLA is ConfirmedOwner, FunctionsClient, ERC20 , Constants {
     using FunctionsRequest for FunctionsRequest.Request;
     using Strings for uint256;
-
-
       enum MintOrRedeem {
         mint,
         redeem
@@ -140,7 +138,7 @@ contract dTSLA is ConfirmedOwner, FunctionsClient, ERC20 , Constants {
     }
 
     function getTslaPrice() public view returns (uint256) {
-       AggregatorV3Interface tsla = AggregatorV3Interface(
+       TslaPriceFeed tsla = TslaPriceFeed(
             SEPOLIA_TSLA_PRICE_FEED
         );
         (, int price, , , ) = tsla.latestRoundData();

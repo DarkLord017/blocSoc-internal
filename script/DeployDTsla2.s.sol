@@ -12,18 +12,20 @@ import {console2} from "forge-std/Test.sol";
     string constant alpacaRedeemSource = "./functions/sources/sell.js";
 uint64 constant subId = 3124;
   dTSLARedeem dtslaredeem;
-  dTSLARouter dtslarouter; 
+  // dTSLARouter dtslarouter; 
 
 function run() public {
 string memory mintSource = vm.readFile(alpacaMintSource);
 string memory redeemSource = vm.readFile(alpacaRedeemSource);
-address router = 0x3dAD7C8B4a628a83236F684250BA58aE807EeE8b;
+address dtslarouter = 0x43Cbc6f4fDA0905F3E2E3050FF34EE177E4d0787;
  vm.startBroadcast();
 // dtslarouter = new dTSLARouter(msg.sender, subId, mintSource );
-dtslaredeem = new dTSLARedeem(router, redeemSource, subId );
+dtslaredeem = new dTSLARedeem( dtslarouter, redeemSource, subId );
+// dtslarouter.changeRedeemContractAddress(address(dtslaredeem));
 vm.stopBroadcast(); 
-// console2.log("Deployed dTSLA contract at address: ", address(dtslarouter));
+// console2.log("Deployed dtsla router at contract address: " , address(dtslarouter));
 console2.log("Deployed dTSLA redeem contract at address: ", address(dtslaredeem));
-}
+
 
 }
+ }

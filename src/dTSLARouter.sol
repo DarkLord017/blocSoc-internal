@@ -25,16 +25,13 @@ contract dTSLARouter is Constants , dTSLA{
     }
 
     function mint(uint256 amountToMint , uint256 amountOfTokenInUsdc) external {
-      if( (getUsdcValueOfUsd(
-            getCalculatedNewTotalValue(amountToMint)
-        ) * COLLATERAL_RATIO )/ COLLATERAL_PRECISION > (amountOfTokenInUsdc*1e12)){
+      
+      if(((getUsdcValueOfUsd(
+            getCalculatedNewTotalValue(amountToMint))*NETWORK_FEE)/NETWORK_FEE_PRECISION)
+        > (amountOfTokenInUsdc*1e12)){
             revert dTSLA_NotEnoughCollateral();
         }
         
-        bool success = ERC20(SEPOILA_USDC).approve(address(this), amountOfTokenInUsdc); 
-        if(!success){
-            revert dTSLA_NotEnoughBalance();
-        }
        bool succ =  ERC20(SEPOILA_USDC).transferFrom(msg.sender, address(this), amountOfTokenInUsdc);
          if(!succ){
               revert dTSLA_NotEnoughBalance();
@@ -48,14 +45,16 @@ contract dTSLARouter is Constants , dTSLA{
     }
 
     function withdraw () external {
-        bool success = ERC20(SEPOILA_USDC).approve(address(dtslaRedeem), ERC20(SEPOILA_USDC).balanceOf(msg.sender)); 
-        if(!success){
-        revert dTSLA_NotEnoughBalance();
-        }
         dtslaRedeem.withdraw(msg.sender);
     }
 
-    
+    function sendUsdcToUser(uint256 amountUsdc , address user) external OnlyRedeem {
+       bool success =  ERC20(SEPOILA_USDC).transfer(user , amountUsdc);
+         if(!success){
+              revert d_TSLA_WithdrawlFailed();
+         }
+    }
+
     function getCollateralforRWATsla(uint256 amountUsdc) public onlyOwner {
          if (
             _collateralRatioAdjustedTotalBalance(0) <
@@ -65,8 +64,6 @@ contract dTSLARouter is Constants , dTSLA{
         }
 
        ERC20(SEPOILA_USDC).transfer(msg.sender , amountUsdc);
-
-
     }
 
     function mint(uint256 amountOfToken , address user) external OnlyRedeem {

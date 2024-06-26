@@ -1,35 +1,35 @@
-
-
-const contractAddress = "0xfC3A719CE42B10A32F1D98c8F5a7f0B834532301";
-const ABI = ["function getPrice() external view returns(uint256)",
-    "event RequestVolume ( bytes32 indexed requestId, uint256 volume)"];
-
-var price;
-
-const rpcUrl = "https://eth-sepolia.g.alchemy.com/v2/IwxDLF249rDhcON6Sr0UkwWdeDzV7A0a"
-
-if (!rpcUrl)
-    throw new Error(`rpcUrl not provided  - check your environment variables`)
-
-const provider = new ethers.providers.JsonRpcProvider(rpcUrl)
-
-const contract = new ethers.Contract(contractAddress, ABI, provider);
-
-function UpdatePrice() {
-
-
-    contract.on("RequestVolume", async (requestId, volume) => {
-        price = await volume.toString();
-        contract.removeAllListeners("RequestVolume");
-        console.log(`Price: ${price}`);
-        return Functions.encodeUint256(price);
-    });
-
-
+if (!secrets.alpacaKey || !secrets.alpacaSecret) {
+    throw Error("Need Alpaca keys.");
 }
 
-UpdatePrice();
+const apiResponse = await Functions.makeHttpRequest({
+    url: "https://data.alpaca.markets/v2/stocks/TSLA/quotes/latest",
+    headers: {
+        'APCA-API-KEY-ID': secrets.alpacaKey,
+        'APCA-API-SECRET-KEY': secrets.alpacaSecret
+    }
+});
 
+if (apiResponse.error) {
+    throw Error(`Request Failed: ${apiResponse.error}`);
+}
 
+const { data } = apiResponse;
 
-// create ethers signer for signing transactions
+if (!data || !data.quote) {
+    throw Error("Invalid response structure from Alpaca.");
+}
+
+let latestPrice = data.quote.ap;
+
+if (latestPrice === 0) {
+    latestPrice = data.quote.bp;
+}
+
+if (latestPrice === 0) {
+    throw Error("Both ask price and bid price are zero. No valid price available.");
+}
+
+console.log(`The latest price of TSLA is $${latestPrice}`);
+
+return Functions.encodeUint256(Math.round(latestPrice * 1e8));

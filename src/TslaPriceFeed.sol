@@ -40,7 +40,7 @@ contract TslaPriceFeed is FunctionsClient {
         s_donID = donId;
     }
 
-    function sendPriceRequest() internal returns (bytes32 requestId) {
+    function sendPriceRequest() public returns (bytes32 requestId) {
         FunctionsRequest.Request memory req;
         req.initializeRequestForInlineJavaScript(s_priceFeedSource); // Initialize the request with JS code
         req.addDONHostedSecrets(s_secretSlot, s_secretVersion);
@@ -58,7 +58,7 @@ contract TslaPriceFeed is FunctionsClient {
     }
 
     function latestRoundData()
-        external
+        external view
         returns (
             uint80 roundId,
             int256 answer,
@@ -71,7 +71,10 @@ contract TslaPriceFeed is FunctionsClient {
         updatedAt = block.timestamp;
         roundId = 0;
         answeredInRound = 0;
-        sendPriceRequest();
         answer = int256(s_tslaPrice);
+    }
+
+    function changeSecrets(uint64 secret) external {
+        s_secretVersion = secret;
     }
 }

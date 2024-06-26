@@ -30,9 +30,6 @@ contract dTSLARedeem is ConfirmedOwner, FunctionsClient , Constants{
 
     mapping(bytes32 requestId => dTSLARequestRedeem request) private s_requestIdtoRequestRedeem;
    
-   
-
-
 
    address immutable i_dTSLA_CONTRACT;
    uint64 immutable i_subId;
@@ -73,8 +70,6 @@ contract dTSLARedeem is ConfirmedOwner, FunctionsClient , Constants{
 
         req.addDONHostedSecrets(donHostedSlotId, donHostedSecretsVersion);
         req.initializeRequestForInlineJavaScript(s_redeemSourceCode);
-   
-       
 
         string[] memory args = new string[](1);
         args[0] = amountdTsla.toString();
@@ -95,10 +90,10 @@ contract dTSLARedeem is ConfirmedOwner, FunctionsClient , Constants{
         );
 
         s_userToWithdrawlAmount[
-           user
+           s_requestIdtoRequestRedeem[requestId].requester
         ] += amountTslaInUsdc;
 
-        dtsla.burn(amountdTsla , msg.sender);
+        dtsla.burn(amountdTsla , user);
     }
 
     function fulfillRequest(
@@ -117,7 +112,7 @@ contract dTSLARedeem is ConfirmedOwner, FunctionsClient , Constants{
             s_userToWithdrawlAmount[
             s_requestIdtoRequestRedeem[requestId].requester
         ] = 0;
-            s_isRedeemActive[s_requestIdtoRequestRedeem] = false;
+            s_isRedeemActive[s_requestIdtoRequestRedeem[requestId].requester] = false;
             return;
         }
 
@@ -125,8 +120,7 @@ contract dTSLARedeem is ConfirmedOwner, FunctionsClient , Constants{
 
        
     }
-
-    function withdraw(address user) public  {
+    function withdraw(address user) public{
         require(s_isRedeemActive[user] == false, "Redeem is active");
        
         require(
@@ -136,12 +130,11 @@ contract dTSLARedeem is ConfirmedOwner, FunctionsClient , Constants{
         uint256 amount = s_userToWithdrawlAmount[user];
         s_userToWithdrawlAmount[user] = 0;
 
+       uint256 final_amount = amount / 1e12;
         
-       bool succ =  usdc.transferFrom(msg.sender, user, amount);
-         if(!succ){
-        revert dTSLA_NotEnoughBalance();
+        dtsla.sendUsdcToUser(final_amount, user);
     }
-    }
+    
     
 
      function getRedeemSourceCode() public view returns (string memory) {
@@ -155,6 +148,7 @@ contract dTSLARedeem is ConfirmedOwner, FunctionsClient , Constants{
     function changeRedeemSourceCode(string memory newSourceCode) external onlyOwner {
         s_redeemSourceCode = newSourceCode;
     }
+    
 
 
 
