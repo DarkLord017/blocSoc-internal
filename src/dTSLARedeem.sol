@@ -111,7 +111,9 @@ contract dTSLARedeem is ConfirmedOwner, FunctionsClient , Constants{
             );
             s_userToWithdrawlAmount[
             s_requestIdtoRequestRedeem[requestId].requester
-        ] = 0;
+        ] -= dtsla.getUsdcValueOfUsd(dtsla.getUsdValueOfTsla(
+         amountUsdInTsla
+        ));
             s_isRedeemActive[s_requestIdtoRequestRedeem[requestId].requester] = false;
             return;
         }
